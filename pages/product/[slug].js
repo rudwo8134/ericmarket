@@ -24,6 +24,7 @@ const ProductScreen = (props) => {
   const { product } = props;
   const { dispatch } = useContext(Store);
   const styles = useStyles();
+  const router = useRouter();
   const addCardHandler = async () => {
     const { data } = await axios.get(`/api/products/${product._id}`);
     if (data.countInStock <= 0) {
@@ -33,6 +34,7 @@ const ProductScreen = (props) => {
       type: 'CART_ADD_ITEM',
       payload: { ...product, quantity: 1 },
     });
+    router.push('/cart');
   };
   if (!product) {
     return <div>Product Not Found</div>;

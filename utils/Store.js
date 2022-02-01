@@ -24,7 +24,7 @@ function reducer(state, action) {
         ...state,
         darkMode: false,
       };
-    case 'CART_ADD_ITEM':
+    case 'CART_ADD_ITEM': {
       const newItem = action.payload;
       const existItem = state.cart.cartItems.find(
         (item) => item._id === newItem._id
@@ -42,6 +42,14 @@ function reducer(state, action) {
           cartItems,
         },
       };
+    }
+    case 'CART_REMOVE_ITEM': {
+      const cartItems = state.cart.cartItems.filter(
+        (item) => item._id !== action.payload._id
+      );
+      Cookies.set('cartItems', JSON.stringify(cartItems));
+      return { ...state, cart: { ...state.cart, cartItems } };
+    }
     default:
       return state;
   }
