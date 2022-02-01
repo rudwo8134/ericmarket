@@ -15,12 +15,13 @@ import {
 } from '@material-ui/core';
 import useStyles from '../../utils/styles';
 import Image from 'next/image';
+import db from '../../utils/db';
+import Product from '../../models/Product';
 
-const ProductScreen = () => {
-  const router = useRouter();
+const ProductScreen = (props) => {
+  const {product} = props;
   const styles = useStyles();
-  const { slug } = router?.query;
-  const product = data?.products.find((a) => a?.slug === slug);
+
   if (!product) {
     return <div>Product Not Found</div>;
   }
@@ -46,7 +47,14 @@ const ProductScreen = () => {
         <Grid item md={3} xs={12}>
           <List>
             <ListItem>
-              <Typography component="h1" variant="h1">Category: {product?.category}</Typography>
+              <Typography component="h1" variant="h1">
+                {product?.name}
+              </Typography>
+            </ListItem>
+            <ListItem>
+              <Typography>
+                Category: {product?.category}
+              </Typography>
             </ListItem>
             <ListItem>
               <Typography> Brand: {product?.brand}</Typography>
@@ -101,5 +109,16 @@ const ProductScreen = () => {
     </Layout>
   );
 };
+
+export async function getServerSideProps(context) {
+  const { params } = context;
+  const {slug} = params;
+  await db.connect();
+  const product = await Product.findOne({ slug }).lean();
+  await db.disconnect();
+  return {
+    props: { product: db.convertDoctoObj(product) },
+  };
+}
 
 export default ProductScreen;
