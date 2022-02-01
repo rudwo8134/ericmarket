@@ -1,5 +1,5 @@
 import { useRouter } from 'next/dist/client/router';
-import React from 'react';
+import React, { useContext } from 'react';
 import Layout from '../../components/Layout';
 import data from '../../utils/data';
 import NextLink from 'next/link';
@@ -17,11 +17,23 @@ import useStyles from '../../utils/styles';
 import Image from 'next/image';
 import db from '../../utils/db';
 import Product from '../../models/Product';
+import axios from 'axios';
+import { Store } from '../../utils/Store';
 
 const ProductScreen = (props) => {
-  const {product} = props;
+  const { product } = props;
+  const { dispatch } = useContext(Store);
   const styles = useStyles();
-
+  const addCardHandler = async () => {
+    const { data } = await axios.get(`/api/products/${product._id}`);
+    if (data.countInStock <= 0) {
+      window.alert('sorry. product is out of stock');
+    }
+    dispatch({
+      type: 'CART_ADD_ITEM',
+      payload: { ...product, quantity: 1 },
+    });
+  };
   if (!product) {
     return <div>Product Not Found</div>;
   }
@@ -52,9 +64,7 @@ const ProductScreen = (props) => {
               </Typography>
             </ListItem>
             <ListItem>
-              <Typography>
-                Category: {product?.category}
-              </Typography>
+              <Typography>Category: {product?.category}</Typography>
             </ListItem>
             <ListItem>
               <Typography> Brand: {product?.brand}</Typography>
@@ -99,6 +109,7 @@ const ProductScreen = (props) => {
                 variant="contained"
                 color={product?.countInStock > 0 ? 'primary' : 'secondary'}
                 disabled={product?.countInStock > 0 ? false : true}
+                onClick={addCardHandler}
               >
                 Add to cart
               </Button>
@@ -112,7 +123,7 @@ const ProductScreen = (props) => {
 
 export async function getServerSideProps(context) {
   const { params } = context;
-  const {slug} = params;
+  const { slug } = params;
   await db.connect();
   const product = await Product.findOne({ slug }).lean();
   await db.disconnect();
